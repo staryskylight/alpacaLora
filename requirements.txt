@@ -5,7 +5,8 @@ bitsandbytes
 black
 black[jupyter]
 datasets
-fire
+torch==1.13.1
+fire==0.6.0
 git+https://github.com/huggingface/transformers@v4.31-release
 sentencepiece
 gradio==3.50
