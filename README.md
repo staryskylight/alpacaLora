@@ -13,6 +13,8 @@ git clone https://gitee.com/hf-models/llama-7b-hf.git
 
 安装依赖项：
 
+推荐python 3.10
+
 ```python
 pip install -r requirements.txt
 ```
