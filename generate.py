@@ -11,7 +11,6 @@ from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer
 from utils.callbacks import Iteratorize, Stream
 from utils.prompter import Prompter
 
-#
 if torch.cuda.is_available():
     device = "cuda"
 else:
@@ -22,8 +21,8 @@ try:
         device = "mps"
 except:  # noqa: E722
     pass
-# #测试
-# device="cpu"
+
+
 def main(
     load_8bit: bool = False,
     base_model: str = "",
@@ -38,7 +37,7 @@ def main(
     ), "Please specify a --base_model, e.g. --base_model='huggyllama/llama-7b'"
 
     prompter = Prompter(prompt_template)
-    tokenizer = LlamaTokenizer.from_pretrained(base_model)#预训练的词元化
+    tokenizer = LlamaTokenizer.from_pretrained(base_model)
     if device == "cuda":
         model = LlamaForCausalLM.from_pretrained(
             base_model,
@@ -96,11 +95,10 @@ def main(
         stream_output=False,
         **kwargs,
     ):
-        #输入
         prompt = prompter.generate_prompt(instruction, input)
         inputs = tokenizer(prompt, return_tensors="pt")
+        # print(inputs)  #ysx
         input_ids = inputs["input_ids"].to(device)
-
         generation_config = GenerationConfig(
             temperature=temperature,
             top_p=top_p,
@@ -148,7 +146,7 @@ def main(
                     yield prompter.get_response(decoded_output)
             return  # early return for stream_output
 
-        # Without streaming #输出
+        # Without streaming
         with torch.no_grad():
             generation_output = model.generate(
                 input_ids=input_ids,
@@ -158,7 +156,9 @@ def main(
                 max_new_tokens=max_new_tokens,
             )
         s = generation_output.sequences[0]
+        # print("s:",s) #ysx
         output = tokenizer.decode(s)
+        print("output:",output)
         yield prompter.get_response(output)
 
     gr.Interface(
@@ -188,14 +188,15 @@ def main(
             gr.components.Checkbox(label="Stream output"),
         ],
         outputs=[
-            gr.inputs.Textbox(
+            gr.components.Textbox(
                 lines=5,
                 label="Output",
             )
         ],
         title="🦙🌲 Alpaca-LoRA",
         description="Alpaca-LoRA is a 7B-parameter LLaMA model finetuned to follow instructions. It is trained on the [Stanford Alpaca](https://github.com/tatsu-lab/stanford_alpaca) dataset and makes use of the Huggingface LLaMA implementation. For more information, please visit [the project's website](https://github.com/tloen/alpaca-lora).",  # noqa: E501
-    ).queue().launch(server_name="0.0.0.0", share=share_gradio)
+    ).queue().launch(server_name="0.0.0.0",server_port=4428, share=share_gradio)
+
     # Old testing code follows.
 
     """
